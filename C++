@@ -1,0 +1,749 @@
+
+
+//CIS554 HW2
+//Due: 11:59PM, Monday ( September 23)
+/*
+Implement two member functions, merge and remove, of the DoublyLinkedList class of HW1.
+The descriptions of the two member functions are given below.
+In the implementation of the two member functions, you are not allowed to modify values of nodes.
+You only can modify pointers of nodes.
+Again, you are not allowed to create new nodes in your implementation.  No external structures (such as arrays,
+linked list, map, etc.) are allowed.  You can use some temporary pointes or variables for your
+implementation.
+
+When you submit your code, do not modify main function.
+
+Do not introduce new functions
+In-place implementation is required.  (This means all operations should directly performed on the list.)
+*/
+#include <iostream>
+using namespace std;
+
+class Node {
+public:
+	int value;
+	Node* next;
+	Node* previous;
+	Node(int i) { value = i; next = previous = nullptr; }
+	Node() { next = previous = nullptr; }
+};
+
+class DoublyLinkedList {
+public:
+	Node* head;
+	Node* tail;
+	DoublyLinkedList() { head = tail = nullptr; }
+	void makeRandomList(int m, int n);
+	void printForward();
+	void printBackward();
+
+	//inplement the following member functions:
+
+	void sort();//sort all values based on frequency in ascending order.
+	 //In case of ties, the smaller values will appear earlier
+	//Example:  for list with values  7 6 12 4 33 12 6 6 7
+	//sorted results: 4 33 7 7 12 12 6 6 6
+
+
+
+	void merge(DoublyLinkedList& L);
+	/*
+	Given an already sorted DoublyLinkedList (using the sort() in HW1), take
+	another already sorted list L as function argument, and merge L into the current
+	list to form a single DoublyLinkedList.
+	You are not allowed to invoke sort() to do merge.
+	Merge is a much easier task and you need to develop a new, efficient way to do merge.
+	*/
+
+	void remove(int m, int n);
+	/*
+	Given an already sorted DoublyLinkedList (using the sort() in HW1),
+	remove n times of value m from the DoublyLinkedList
+	if n is more than the total number of m's in the DoublyLinkedList,
+	then remove all m's from the list.
+	If m does not exist in the list, then do nothing.
+	*/
+
+
+
+};
+
+void DoublyLinkedList::makeRandomList(int m, int n) {
+
+	for (int i = 0; i < m; i++) {
+		Node* p1 = new Node(rand() % n);
+		p1->previous = tail;
+		if (tail != nullptr) tail->next = p1;
+		tail = p1;
+		if (head == nullptr) head = p1;
+	}
+}
+
+void DoublyLinkedList::printForward() {
+	cout << endl;
+	Node* p1 = head;
+	while (p1 != nullptr) {
+		cout << p1->value << " ";
+		p1 = p1->next;
+	}
+}
+
+void DoublyLinkedList::printBackward() {
+	cout << endl;
+	Node* p1 = tail;
+	while (p1 != nullptr) {
+		cout << p1->value << " ";
+		p1 = p1->previous;
+	}
+}
+
+void DoublyLinkedList::sort() {
+	if (head == nullptr || head->next == nullptr) return;
+	Node* p1 = head;
+	Node* row = head;
+	Node* row2 = row->next;
+	while (p1)
+	{
+		while (row2)
+		{
+			if (row->value > row2->value)
+			{
+				int temp = row->value;
+				row->value = row2->value;
+				row2->value = temp;
+			}
+			row = row->next;
+			row2 = row->next;
+		}
+		row = head;
+		row2 = row->next;
+		p1 = p1->next;
+	}															//bubble sort
+
+
+	Node* length = head;			// find the length of the linkedlist
+	int len = 1;
+	while (length->next != nullptr)
+	{
+		len++;
+		length = length->next;
+	}
+
+	int maxoccur = 0;
+	int max = 1;
+	Node* test1 = head;
+	Node* test2 = test1->next;
+	while (test2)
+	{
+		if (test1->value == test2->value)
+		{
+			test1 = test1->next;
+			test2 = test1->next;
+			max = max + 1;
+		}
+		else if (test1->value != test2->value)
+		{
+			test1 = test1->next;
+			test2 = test1->next;
+			if (max > maxoccur) maxoccur = max;
+			max = 1;
+		}
+
+	}
+	if (max > maxoccur) maxoccur = max;
+
+	int count = 1;
+	Node* temphead = head;
+	for (int i = 1; i < maxoccur; i++)
+	{
+		Node* listhead = head;
+		count = 1;
+		for (int j = 0; j < len; j++)
+		{
+			Node* listsecond = listhead->next;
+			if (listsecond != nullptr)
+			{
+				if (listhead->value != listsecond->value)
+				{
+					if (count <= i)
+					{
+						listhead = listhead->next;
+						temphead = listhead;
+						count = 1;
+					}
+					if (count > i)
+					{
+						Node* sectiontail = listhead;
+						Node* sectionhead = temphead;
+
+
+						listhead = listhead->next;
+						temphead = listhead;
+						//for (int k = 1; k < count; k++)	sectionhead = sectionhead->previous;
+						if (sectionhead != head)
+						{
+							sectionhead->previous->next = sectiontail->next;
+							sectiontail->next->previous = sectionhead->previous;
+							tail->next = sectionhead;
+							sectionhead->previous = tail;
+							tail = sectiontail;
+							sectiontail->next = nullptr;
+							count = 1;
+						}
+						else if (sectionhead == head)
+						{
+							head = listhead;
+							head->next = listhead->next;
+							listhead->next->previous = head;
+							head->previous = nullptr;
+							tail->next = sectionhead;
+							sectionhead->previous = tail;
+							sectiontail->next = nullptr;
+							tail = sectiontail;
+							count = 1;
+						}
+					}
+				}
+				else if (listhead->value == listsecond->value)
+				{
+					listhead = listhead->next;
+					count++;
+				}
+			}
+		}
+	}
+}
+
+
+void DoublyLinkedList::merge(DoublyLinkedList& L)
+{
+	if (!L.head) return;
+
+	Node* p1 = L.head;
+	while (p1)
+	{
+		Node* p2 = p1->next;
+		while (p2)
+		{
+			if (p2->value == p1->value)
+			{
+				Node* p3 = p2;
+				p2 = p2->next;
+				if (p3 == L.tail)
+				{
+					L.tail = p3->previous;
+					p3->previous->next = nullptr;
+					p3->previous = nullptr;
+					if (p1 == L.tail)
+					{
+						p1->next = p3;
+						p3->previous = p1;
+						L.tail = p3;
+					}
+					else if (p1 != L.tail)
+					{
+						p3->next = p1->next;
+						p1->next->previous = p3;
+						p3->previous = p1;
+						p1->next = p3;
+					}
+					p1 = p1->next;
+				}
+				else if(p3!=L.tail)
+				{
+					p3->previous->next = p3->next;
+					p3->next->previous = p3->previous;
+					p3->next = nullptr;
+					p3->previous = nullptr;
+					p1->next->previous = p3;
+					p3->next = p1->next;
+					p1->next = p3;
+					p3->previous = p1;
+					p1 = p1->next;
+				}
+
+			}
+			else if (p2->value != p1->value)
+			{
+				p2 = p2->next;
+			}
+		}
+		p1 = p1->next;
+	}                             //grouping L
+
+
+	if (!head)
+	{
+		Node* temphead = L.head;
+		Node* temptail = L.head;
+		while(temptail->next && temptail->next->value == temphead->value)
+			temptail = temptail->next;
+		L.head = temptail->next;
+		temptail->next = nullptr;
+		temphead->previous = nullptr;
+		head = temphead;
+		tail = temptail;
+	}
+		
+	while (L.head)
+	{
+		L.head->previous = nullptr;
+		Node* temphead = L.head;
+		Node* temptail = L.head;
+		int k = 1;
+		while (temptail->next && temptail->next->value == temphead->value)
+		{
+			temptail = temptail->next;
+			k++;
+		}
+		L.head = temptail->next;
+		temptail->next = nullptr;
+		temphead->previous = nullptr;
+
+		Node* p1 = head;
+		while (p1 && p1->value != temphead->value)
+			p1 = p1->next;
+		if (!p1)
+		{
+			Node* p3 = head;
+			Node* p4 = p3;
+//			insert(temphead,temptail)
+			for (int i = 1; i < k; i++)
+			{
+				if (p4)
+					p4 = p4->next;
+			}
+			if (!p4)
+			{
+				tail->next = temphead;
+				temphead->previous = tail;
+				tail = temptail;
+			}
+			else if (p4)
+			{
+				while (p4 && p3->value != p4->value)
+				{
+					p3 = p3->next;
+					p4 = p4->next;
+				}
+				if (!p4)
+				{
+					tail->next = temphead;
+					temphead->previous = tail;
+					tail = temptail;
+				}
+
+				else while (p4)
+				{
+					if (!p4)
+					{
+						tail->next = temphead;
+						temphead->previous = tail;
+						tail = temptail;
+						break;
+					}
+					if (!p4->next)
+					{
+						if (p4->value < temptail->value)
+						{
+							tail->next = temphead;
+							temphead->previous = tail;
+							tail = temptail;
+							break;
+						}
+						else if (p4->value > temptail->value)
+						{
+							if (p3 == head)
+							{
+								head->previous = temptail;
+								temptail->next = head;
+								head = temphead;
+								break;
+							}
+							else if (p3 != head)
+							{
+								p3->previous->next = temphead;
+								temphead->previous = p3->previous;
+								temptail->next = p3;
+								p3->previous = temptail;
+								break;
+							}
+						}
+					}
+					else if (p4->next)
+					{
+
+						if (p4->next->value == p4->value)
+						{
+							if (p3 == head)
+							{
+								head->previous = temptail;
+								temptail->next = head;
+								head = temphead;
+								break;
+							}
+							else if (p3 != head)
+							{
+								p3->previous->next = temphead;
+								temphead->previous = p3->previous;
+								temptail->next = p3;
+								p3->previous = temptail;
+								break;
+							}
+						}
+						else if (p4->next->value != p4->value)
+						{
+							if (p4->value < temphead->value)
+							{
+								for (int i = 0; i < k; i++)
+								{
+									if (p4)
+									{
+										p3 = p3->next;
+										p4 = p4->next;
+									}
+								}
+							}
+							else if (p4->value > temphead->value)
+							{
+								if (p3 == head)
+								{
+									head->previous = temptail;
+									temptail->next = head;
+									head = temphead;
+									break;
+								}
+								else if (p3 != head)
+								{
+									p3->previous->next = temphead;
+									temphead->previous = p3->previous;
+									temptail->next = p3;
+									p3->previous = temptail;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			Node* p2 = p1;
+			k++;
+			while (p2->next && p2->next->value == temphead->value)
+			{
+				p2 = p2->next;
+				k++;
+			}
+			if (!p2->next)
+			{
+				p2->next = temphead;
+				temphead->previous = p2;
+				tail = temptail;
+			}
+			else if (p2->next)
+			{
+				Node* p3 = p2->next;
+				if (p1 == head)
+				{
+					head = p3;
+					head->previous = nullptr;
+					p2->next = nullptr;
+				}
+				else if (p1 != head)
+				{
+					p1->previous->next = p3;
+					p3->previous = p1->previous;
+				}
+				p1->previous = temptail;
+				temptail->next = p1;
+				p2->next = nullptr;
+				temptail = p2;
+
+				Node* p4 = p3;
+				for (int i = 1; i < k; i++)
+				{
+					if (p4)
+						p4 = p4->next;
+				}
+				if (!p4)
+				{
+					tail->next = temphead;
+					temphead->previous = tail;
+					tail = temptail;
+				}
+				else if (p4)
+				{
+					while (p4 && p3->value != p4->value)
+					{
+						p3 = p3->next;
+						p4 = p4->next;
+					}
+					if(!p4)
+					{
+						tail->next = temphead;
+						temphead->previous = tail;
+						tail = temptail;
+					}
+
+					else while (p4)
+					{
+						if (!p4)
+						{
+							tail->next = temphead;
+							temphead->previous = tail;
+							tail = temptail;
+							break;
+						}
+						if (!p4->next)
+						{
+							if (p4->value < temptail->value)
+							{
+								tail->next = temphead;
+								temphead->previous = tail;
+								tail = temptail;
+								break;
+							}
+							else if (p4->value > temptail->value)
+							{
+								if (p3 == head)
+								{
+									head->previous = temptail;
+									temptail->next = head;
+									head = temphead;
+									break;
+								}
+								else if (p3 != head)
+								{
+									p3->previous->next = temphead;
+									temphead->previous = p3->previous;
+									temptail->next = p3;
+									p3->previous = temptail;
+									break;
+								}
+							}
+						}
+						else if (p4->next)
+						{
+
+							if (p4->next->value == p4->value)
+							{
+								if (p3 == head)
+								{
+									head->previous = temptail;
+									temptail->next = head;
+									head = temphead;
+									break;
+								}
+								else if (p3 != head)
+								{
+									p3->previous->next = temphead;
+									temphead->previous = p3->previous;
+									temptail->next = p3;
+									p3->previous = temptail;
+									break;
+								}
+							}
+							else if (p4->next->value != p4->value)
+							{
+								if (p4->value < temphead->value)
+								{
+									for (int i = 0; i < k; i++)
+									{
+										if (p4)
+										{
+											p3 = p3->next;
+											p4 = p4->next;
+										}
+									}
+								}
+								else if (p4->value > temphead->value)
+								{
+									if (p3 == head)
+									{
+										head->previous = temptail;
+										temptail->next = head;
+										head = temphead;
+										break;
+									}
+									else if (p3 != head)
+									{
+										p3->previous->next = temphead;
+										temphead->previous = p3->previous;
+										temptail->next = p3;
+										p3->previous = temptail;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+
+
+			}
+
+		}
+	}
+
+
+
+}
+
+void DoublyLinkedList::remove(int m, int n)
+{
+	if (n == 0) return;
+	Node* p1 = head;
+	while (p1 && p1->value != m)	p1 = p1->next;
+	if (p1 == nullptr)
+		return;
+	else if (p1->value == m)
+	{
+		Node* temphead = p1;
+		Node* temptail = p1;
+		while (temptail->next && temptail->next->value == m)
+		{
+			temptail = temptail->next;
+		}
+		
+		if (temphead == head)
+		{
+			head = temptail->next;
+			temptail->next = nullptr;
+			head->previous = nullptr;
+		}
+		else if (temptail == tail)
+		{
+			tail = temphead->previous;
+			temphead->previous = nullptr;
+			tail->next = nullptr;
+		}
+		else {
+			temphead->previous->next = temptail->next;
+			temptail->next->previous = temphead->previous;
+			temptail->next = nullptr;
+			temphead->previous = nullptr;
+		}
+	
+
+		for (int i = 0; i < n; i++)
+		{
+			temphead = temphead->next;
+			if (temphead == nullptr)
+				return;
+		}
+		
+
+		Node* pk = temphead;
+		int k = 1;
+		while (pk != temptail)
+		{
+			pk = pk->next;
+			k++;
+		}
+
+		Node* p2 = head;
+		Node* p3 = p2;
+		for (int m = 1; m < k; m++)
+		{
+			p3 = p3->next;
+			if (!p3)
+			{
+				tail->next = temphead;
+				temphead->previous = tail;
+				tail = temptail;
+				return;
+			}
+		}
+
+		while (p3 && p2->value != p3->value)
+		{
+			p2 = p2->next;
+			p3 = p3->next;
+		}
+		if (!p3)
+		{
+			tail->next = temphead;
+			temphead->previous = tail;
+			tail = temptail;
+			return;
+		}
+		else {
+			while (p3->next->value != p3->value)
+			{
+				if (p3->value > temphead->value)
+				{
+					if (p2 == head)
+					{
+						temptail->next = head;
+						head->previous = temptail;
+						head = temphead;
+						head->previous = nullptr;
+						return;
+					}
+					else if (p2 != head) {
+						temphead->previous = p2->previous;
+						p2->previous->next = temphead;
+
+						temptail->next = p2;
+						p2->previous = temptail;
+						return;
+					}
+				}
+				else
+				{
+					for (int m = 0; m < k; m++)
+					{
+						p2 = p2->next;
+						p3 = p3->next;
+					}
+				}
+			}
+			if (p2 == head)
+			{
+				temptail->next = head;
+				head->previous = temptail;
+				head = temphead;
+				head->previous = nullptr;
+			}
+			else if (p2 != head)
+			{
+
+				temphead->previous = p2->previous;
+				p2->previous->next = temphead;
+
+				temptail->next = p2;
+				p2->previous = temptail;
+			}
+			return;
+
+		}
+	}
+}
+
+int main() {
+	DoublyLinkedList d1, d2;
+	d1.makeRandomList(50, 20);
+	d1.printForward();
+	d1.printBackward();
+
+	d1.sort();
+	d1.printForward();
+	d1.printBackward();
+
+	d2.makeRandomList(50, 20);
+	d2.printForward();
+	d2.printBackward();
+
+	d1.merge(d2);
+	d1.printForward();
+	d1.printBackward();
+
+	d1.remove(13,3);
+	d1.printForward();
+	d1.printBackward();
+	getchar();
+	getchar();
+	return 0;
+}
