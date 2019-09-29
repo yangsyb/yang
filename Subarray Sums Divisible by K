@@ -1,0 +1,26 @@
+class Solution {
+public:
+    int subarraysDivByK(vector<int>& A, int K) {
+        if(A.size() == 1)
+        {
+            if(A[0]%K == 0)
+                return 1;
+            return 0;
+        }
+        
+        vector<int> v(K,0);
+        v[0] = 1;
+        int sum = 0;
+        for(auto i1: A)
+        {
+            sum = sum+ i1;
+            v[(sum%K+K)%K]++;
+        }
+        int s =0;
+        for(auto i2: v)
+        {
+            s = s+ i2*(i2-1)/2;
+        }
+        return s;
+    }
+};
